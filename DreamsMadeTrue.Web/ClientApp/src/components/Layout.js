@@ -1,18 +1,20 @@
 import React, { Component } from 'react';
-import { Col, Grid, Row } from 'react-bootstrap';
 import NavMenu from './NavMenu';
+import { Container, Row, Col } from 'reactstrap';
 
 export default class Layout extends Component {
-    render() {
-        return (<Grid fluid>
-            <Row>
-                <Col md={3}>
-                    <NavMenu />
-                </Col>
-                <Col md={9}>
-                    {this.props.children}
-                </Col>
-            </Row>
-        </Grid>);
-    }
+  render() {
+    return (
+      <Container fluid>
+        <Row>
+          <NavMenu isAuthenticated={this.props.isAuthenticated} />
+        </Row>
+        <Row>
+          <Col>
+            {this.props.children}
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
 }

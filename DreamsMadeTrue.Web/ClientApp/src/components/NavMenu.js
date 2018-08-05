@@ -1,35 +1,75 @@
-﻿import React from 'react';
+﻿import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Glyphicon, Nav, Navbar, NavItem } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import {
+  Collapse,
+  Navbar,
+  NavbarToggler,
+  NavbarBrand,
+  Nav,
+  NavItem,
+  NavLink,
+} from 'reactstrap';
+
 import './NavMenu.css';
 
-export default props => (
-  <Navbar inverse fixedTop fluid collapseOnSelect>
-    <Navbar.Header>
-      <Navbar.Brand>
-        <Link to={'/'}>DreamsMadeTrue.Web</Link>
-      </Navbar.Brand>
-      <Navbar.Toggle />
-    </Navbar.Header>
-    <Navbar.Collapse>
-      <Nav>
-        <LinkContainer to={'/'} exact>
-          <NavItem>
-            <Glyphicon glyph='home' /> Home
-          </NavItem>
-        </LinkContainer>
-        <LinkContainer to={'/counter'}>
-          <NavItem>
-            <Glyphicon glyph='education' /> Counter
-          </NavItem>
-        </LinkContainer>
-        <LinkContainer to={'/fetchdata'}>
-          <NavItem>
-            <Glyphicon glyph='th-list' /> Fetch data
-          </NavItem>
-        </LinkContainer>
-      </Nav>
-    </Navbar.Collapse>
-  </Navbar>
-);
+class NavMenu extends Component {
+  constructor(props) {
+    super(props);
+
+    this.toggle = this.toggle.bind(this);
+    this.state = {
+      isOpen: false
+    };
+  }
+
+  toggle() {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+
+  logout() {
+    localStorage.clear();
+  }
+
+  render() {
+    var authenticationDependentItems = this.props.isAuthenticated ? [
+      <NavItem key={'contestant'}>
+        <NavLink tag={Link} to="/contestants">Contestants</NavLink>
+      </NavItem>,
+      <NavItem key={'logout'}>
+        <NavLink onClick={this.logout} href="/">Logout</NavLink>
+      </NavItem>
+    ] : [
+        <NavItem key={'login'}>
+          <NavLink tag={Link} to="/login">Login</NavLink>
+        </NavItem>
+      ];
+
+    return (
+      <div className={'navbar-wrapper'}>
+        <Navbar color="dark" dark expand="md">
+          <NavbarBrand tag={Link} to="/">Dreams Made True</NavbarBrand>
+          <NavbarToggler onClick={this.toggle} />
+          <Collapse isOpen={this.state.isOpen} navbar>
+            <Nav>
+              <NavItem>
+                <NavLink tag={Link} to="/">Home</NavLink>
+              </NavItem>
+              {authenticationDependentItems}
+            </Nav>
+          </Collapse>
+        </Navbar>
+      </div>
+    );
+  }
+}
+
+export default connect(
+  (state, ownProps) => {
+    return {
+      isAuthenticated: ownProps.isAuthenticated,
+    }
+  },
+)(NavMenu)

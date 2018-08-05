@@ -3,13 +3,13 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
   Table,
-} from 'react-bootstrap';
+} from 'reactstrap';
 
 class ContestantList extends Component {
   render() {
+
     const items = this.props.list.map(c => {
-      console.log(c);
-      return (<tr key={c.id}><td><Link to={`/contestants/${c.id}`}>{c.firstName} {c.lastName}</Link></td><td>{c.birthday}</td></tr>);
+      return (<tr key={c.id}><td><Link to={`/contestants/${c.id}`}>{c.firstName} {c.lastName}</Link></td><td>{c.birthday.format('MMM Do YYYY')}</td></tr>);
     });
 
     return (<Table className={'table-hover'}>
@@ -20,9 +20,9 @@ class ContestantList extends Component {
         </tr>
       </thead>
       <tbody>
-      {items}
+        {items}
       </tbody>
-      </Table>);
+    </Table>);
   }
 }
 

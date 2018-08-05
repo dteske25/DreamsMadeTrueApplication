@@ -1,26 +1,41 @@
 ﻿import React, { Component } from 'react';
-import { Route } from 'react-router';
+import { Route, Redirect } from 'react-router';
+import { connect } from 'react-redux';
 import Layout from './components/Layout';
-import Auth from './components/Auth';
 import Home from './components/Home';
-import Counter from './components/Counter';
-import FetchData from './components/FetchData';
 import Login from './components/Login';
+import Register from './components/Register';
 import ContestantList from './components/ContestantList';
 import ContestantProfile from './components/ContestantProfile';
 
-export default class App extends Component {
-    render() {
-        return (<Layout>
-            <Auth>
-                <Route exact path='/' component={Home} />
-                <Route path='/counter' component={Counter} />
-                <Route path='/fetchdata/:startDateIndex?' component={FetchData} />
-                <Route path='/login' component={Login} />
-                <Route exact path='/contestants' component={ContestantList} />
-                <Route path='/contestants/:id' component={ContestantProfile} />
-            </Auth>
-        </Layout>);
-    }
+const ProtectedRoute = ({ component: Component, isAuthenticated, ...rest }) => (
+  <Route
+    {...rest}
+    render={props =>
+      isAuthenticated ? (
+        <Component {...props} />
+      ) : (
+          <Redirect
+            to={{
+              pathname: "/login",
+              state: { from: props.location }
+            }}
+          />
+        )
+    } />
+);
+
+class App extends Component {
+  render() {
+  const authenticated = !!this.props.userStore.token;
+    return (<Layout isAuthenticated={authenticated}>
+      <Route exact path='/' component={Home} />
+      <Route exact path='/login' component={Login} />
+      <Route exact path='/register' component={Register} />
+      <ProtectedRoute exact path='/contestants' isAuthenticated={authenticated} component={ContestantList} />
+      <ProtectedRoute path='/contestants/:id' isAuthenticated={authenticated} component={ContestantProfile} />
+    </Layout>);
+  }
 }
 
+export default connect(state => state)(App);

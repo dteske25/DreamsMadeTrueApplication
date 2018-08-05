@@ -1,0 +1,13 @@
+﻿.sign-in-form-wrapper {
+    justify-content: center;
+    padding-top: 100px;
+    height: 100%;
+}
+
+.register-button {
+    margin-right: 5px;
+}
+
+.login-button {
+    margin-left: 5px;
+}

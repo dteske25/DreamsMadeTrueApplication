@@ -1,67 +1,83 @@
 ﻿import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { actionCreators } from '../store/UserStore';
 import {
-    Col,
-    Row,
-    FormControl,
-    Button,
-    ButtonToolbar
-} from 'react-bootstrap';
+  FormGroup,
+  Input,
+  Label,
+  Button,
+  Row,
+  Col,
+} from 'reactstrap';
+
+import './Login.css';
 
 class Login extends Component {
-    handleChange = (e, name) => {
-        this.props.updateField(name, e.target.value);
+  handleChange = (e, name) => {
+    this.props.updateField(name, e.target.value);
+  }
+
+  render() {
+    if (this.props.token) {
+      return (<Redirect to='/' />)
     }
 
-    render() {
-        if (this.props.token){
-            return (<Redirect to='/' />)
-        }
-
-        return (<div>
-            <Row>
-                <Col xs={12} md={4}>
-                    <FormControl
-                        type="text"
-                        placeholder="Username"
-                        onChange={(e) => this.handleChange(e, "username")}
-                        value={this.props.username}
-                    />
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={12} md={4}>
-                    <FormControl 
-                        type="password" 
-                        placeholder="Password"
-                        onChange={(e) => this.handleChange(e, "password")}
-                        value={this.props.password}
-                    />
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={12} md={4}>
-                    <ButtonToolbar>
-                        <Button bsStyle="link">Forgot password?</Button>
-                    </ButtonToolbar>
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={12} md={4}>
-                    <ButtonToolbar>
-                        <Button bsStyle="default">Create An Account</Button>
-                        <Button bsStyle="primary" onClick={this.props.login}>Submit</Button>
-                    </ButtonToolbar>
-                </Col>
-            </Row>
-        </div>)
-    }
+    return (<div className={'text-center sign-in-form-wrapper'}>
+      <div className={'sign-in-form'}>
+        <Row>
+          <Col>
+            <h2>Sign in</h2>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12" md={{ size: 4, offset: 4}}>
+            <FormGroup>
+              <Label for="username" className={'sr-only'}>Username</Label>
+              <Input
+                type="text"
+                name="username"
+                placeholder="Username"
+                required
+                value={this.props.username}
+                onChange={e => this.handleChange(e, "username")} />
+            </FormGroup>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12" md={{ size: 4, offset: 4 }}>
+            <FormGroup>
+              <Label for="password" className={'sr-only'}>Password</Label>
+              <Input
+                type="password"
+                name="password"
+                placeholder="Password"
+                required
+                value={this.props.password}
+                onChange={e => this.handleChange(e, "password")} />
+            </FormGroup>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12" md={{ size: 4, offset: 4 }}>
+            <Button color="link">Forgot password?</Button>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12" md={{ size: 4, offset: 4 }}>
+            <Link to={'/register'}>
+              <Button className={'register-button'} color="secondary">Register</Button>
+            </Link>
+            <Button className={'login-button'} color="primary" onClick={this.props.login}>Log In</Button>
+          </Col>
+        </Row>
+      </div>
+    </div>)
+  }
 }
 
 export default connect(
-    state => state.userStore,
-    dispatch => bindActionCreators(actionCreators, dispatch)
+  state => state.userStore,
+  dispatch => bindActionCreators(actionCreators, dispatch)
 )(Login);

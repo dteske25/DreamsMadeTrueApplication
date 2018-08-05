@@ -1,5 +1,6 @@
 ﻿import { applyMiddleware, combineReducers, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
+import { createLogger } from 'redux-logger';
 import { routerReducer, routerMiddleware } from 'react-router-redux';
 import * as Counter from './Counter';
 import * as WeatherForecasts from './WeatherForecasts';
@@ -16,6 +17,7 @@ export default function configureStore(history, initialState) {
 
   const middleware = [
     thunk,
+    createLogger({ collapsed: true }),
     routerMiddleware(history)
   ];
 

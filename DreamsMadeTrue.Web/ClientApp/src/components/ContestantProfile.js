@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Row, Col } from 'react-bootstrap';
 import * as moment from 'moment';
 
 class ContestantProfile extends Component {
@@ -17,13 +16,13 @@ class ContestantProfile extends Component {
 
 
     return (<div>
-      <Row>
-        <Col md={8}>
+      <div className={'row'}>
+        <div className={'col-md-8'}>
           <p>Name: {contestant.firstName} {contestant.lastName}</p>
-          <br/>
+          <br />
           <p>Age: {Math.floor(years)} years old</p>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>);
   }
 }

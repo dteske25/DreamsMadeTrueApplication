@@ -1,28 +1,28 @@
 import * as moment from 'moment';
-const updateFieldType = 'UPDATE_FIELD';
-const loginRequested = 'LOGIN_REQUESTED';
-const loginSucceeded = 'LOGIN_SUCCEEDED';
-const loginFailed = 'LOGIN_FAILED';
+//const updateFieldType = 'UPDATE_FIELD';
+//const loginRequested = 'LOGIN_REQUESTED';
+//const loginSucceeded = 'LOGIN_SUCCEEDED';
+//const loginFailed = 'LOGIN_FAILED';
 const initialState = {
     list: [{
         id: '1234',
         firstName: 'Daric',
         lastName: 'Teske',
-        birthday: moment('12/12/1995'),
+        birthday: moment('1995-12-12'),
         tShirtSize: 'XXL',
     },
     {
         id: '2345',
         firstName: 'asdf',
         lastName: 'asdf',
-        birthday: moment('12/12/1997'),
+        birthday: moment('1997-12-12'),
         tShirtSize: 'XL',
     },
     {
         id: '3456',
         firstName: 'qwer',
         lastName: 'qwer',
-        birthday: moment('12/12/1996'),
+        birthday: moment('1996-12-12'),
         tShirtSize: 'L',
     }]
 }
