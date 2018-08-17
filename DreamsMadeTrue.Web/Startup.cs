@@ -21,9 +21,10 @@ namespace DreamsMadeTrue.Web
         public void ConfigureServices(IServiceCollection services)
         {
             // Inject the configuration along with all the other dependency injection
-            //services.AddScoped(c => Configuration);
+            services.AddSingleton(Configuration);
             services.AddAccessors(Configuration["MongoConnection"]);
             services.AddEngines();
+            // Add Auth
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer();
 

@@ -22,6 +22,7 @@ const initialState = {
   userInfo: {},
   loading: false,
   submittedOnce: false,
+  needsToConfirmAccount: false,
 }
 
 export const actionCreators = {
@@ -41,7 +42,7 @@ export const actionCreators = {
       .then(response => response.json())
       .then(data => {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("userInfo", data.userInfo);
+        localStorage.setItem("userInfo", JSON.stringify(data.userInfo));
         dispatch({ type: loginSucceeded, data });
       })
       .catch(err => dispatch({ type: loginFailed, err }));
@@ -71,12 +72,12 @@ export const actionCreators = {
         email: enteredInfo.email,
       }),
     })
-      .then(response => response.json())
-      .then(data => {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userInfo", data.userInfo);
-        dispatch({ type: registrationSucceeded, data });
-      })
+      // .then(response => response.json())
+      // .then(data => {
+      //   localStorage.setItem("token", data.token);
+      //   localStorage.setItem("userInfo", data.userInfo);
+      //   dispatch({ type: registrationSucceeded, data });
+      // })
       .catch(err => dispatch({ type: registrationFailed, err }));
   },
   logout: () => async (dispatch, getState) => {
@@ -103,8 +104,9 @@ export const reducer = (state, action) => {
   state = state || initialState;
 
   if (state.token === '') {
+    //Attempt to load user info from local storage
     state.token = localStorage.getItem("token");
-    state.userInfo = localStorage.getItem("userInfo");
+    state.userInfo = JSON.parse(localStorage.getItem("userInfo"));
   }
 
 
@@ -129,7 +131,7 @@ export const reducer = (state, action) => {
     };
   }
 
-  if (action.type === loginSucceeded || action.type === registrationSucceeded) {
+  if (action.type === loginSucceeded) {
     return {
       ...state,
       loading: false,
@@ -138,6 +140,14 @@ export const reducer = (state, action) => {
       token: action.data.token,
       userInfo: action.data.userInfo
     };
+  }
+
+  if (action.type === registrationSucceeded) {
+    return {
+      ...state,
+      loading: false,
+      needsToConfirmAccount: true,
+    }
   }
 
   if (action.type === logoutUser) {

@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddScoped(s => context);
 
+            services.AddTransient<IEmailAccessor, EmailAccessor>();
             services.AddTransient<IUserAccessor, UserAccessor>();
 
 

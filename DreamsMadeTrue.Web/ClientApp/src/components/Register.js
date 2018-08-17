@@ -22,8 +22,8 @@ class Register extends Component {
 
   render() {
     const { username, email, firstName, lastName, password, confirmPassword, submittedOnce } = this.props;
-    if (this.props.token) {
-      return (<Redirect to='/' />)
+    if (this.props.needsToConfirmAccount) {
+      return (<Redirect to='/register/confirm' />)
     }
 
     const validation = {

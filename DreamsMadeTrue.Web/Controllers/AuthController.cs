@@ -1,47 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using DreamsMadeTrue.Core.Models;
+using DreamsMadeTrue.Engines.Client.Dtos;
+using DreamsMadeTrue.Engines.Client.Interfaces;
 using DreamsMadeTrue.Web.Params;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace DreamsMadeTrue.Web.Controllers
 {
     [Route("api/auth")]
     public class AuthController : Controller
     {
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager;
-        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        private readonly IUserEngine _userEngine;
+        private readonly IEmailEngine _emailEngine;
+        public AuthController(IUserEngine userEngine, IEmailEngine emailEngine)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _userEngine = userEngine;
+            _emailEngine = emailEngine;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]CreateUserParams userParams)
         {
-            var user = new ApplicationUser
+            var user = new UserDto
             {
                 FirstName = userParams.FirstName,
                 LastName = userParams.LastName,
                 Email = userParams.Email,
-                UserName = userParams.Username,
+                Username = userParams.Username,
             };
-            var result = await _userManager.CreateAsync(user, userParams.Password);
-            if (result.Succeeded)
+            var resultingUser = await _userEngine.CreateUser(user, userParams.Password);
+            if (resultingUser != null)
             {
-                await _signInManager.SignInAsync(user, false);
-                return Json(new
+                var code = await _userEngine.GenerateEmailConfirmation(resultingUser);
+                var url = $"{(HttpContext.Request.IsHttps ? "https://" : "http://")}{HttpContext.Request.Host}/register/confirm/{HtmlEncoder.Default.Encode(code)}";
+                var text = $"Confirm your account here: {url} ";
+                var html = $"<html><body><div>Click <a href=\"{url}\">here</a> to confirm your account</div></body></html>";
+                await _emailEngine.SendEmail(new EmailDto
                 {
-                    token = GenerateToken(user),
-                    userInfo = user
+                    ToAddresses = new List<string> { userParams.Email },
+                    Subject = "Verify Your Account",
+                    TextContent = text,
+                    HtmlContent = html
                 });
+                //await _signInManager.SignInAsync(user, false);
+                //return Json(new
+                //{
+                //    token = GenerateToken(user),
+                //    userInfo = user
+                //});
+                return Ok();
             }
             return Unauthorized();
         }
@@ -49,57 +57,17 @@ namespace DreamsMadeTrue.Web.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody]LoginUserParams userParams)
         {
-            var user = await _userManager.FindByNameAsync(userParams.Username);
-            var result = await _signInManager.PasswordSignInAsync(user, userParams.Password, false, false);
-            if (result.Succeeded)
+            var user = await _userEngine.FindUserByUsername(userParams.Username);
+            var signInResult = await _userEngine.PasswordSignInUser(user, userParams.Password);
+            if (signInResult.Succeeded)
             {
                 return Json(new
                 {
-                    token = GenerateToken(user),
-                    userInfo = user
+                    token = signInResult.Token,
+                    userInfo = signInResult.UserInfo
                 });
             }
             return Unauthorized();
         }
-
-        //[HttpPost("logout")]
-        //public async Task<IActionResult> Logout()
-        //{
-
-        //}
-
-        //Login
-        //Logout
-        private string GenerateToken(ApplicationUser user)
-        {
-            var claims = new List<Claim>
-                {
-                    new Claim(CustomClaimTypes.UserId, user.Id),
-                    new Claim(CustomClaimTypes.Username, user.UserName),
-                    new Claim(CustomClaimTypes.Email, user.Email),
-                    new Claim(CustomClaimTypes.FirstName, user.FirstName),
-                    new Claim(CustomClaimTypes.LastName, user.LastName),
-                };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("supersecretkeythatillinjectlater"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: "dreams-made-true.org",
-                audience: "dreams-made-true.org",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-    }
-
-    public class CustomClaimTypes
-    {
-        public const string UserId = "userId";
-        public const string Username = "username";
-        public const string Email = "email";
-        public const string FirstName = "firstName";
-        public const string LastName = "lastName";
     }
 }

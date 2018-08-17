@@ -8,9 +8,4 @@
     <ProjectReference Include="..\DreamsMadeTrue.Core\DreamsMadeTrue.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Dtos\" />
-    <Folder Include="Interfaces\" />
-  </ItemGroup>
-
 </Project>
