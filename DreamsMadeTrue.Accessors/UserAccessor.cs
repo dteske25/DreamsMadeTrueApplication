@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using DreamsMadeTrue.Core.Enums;
 using DreamsMadeTrue.Core.Interfaces;
 using DreamsMadeTrue.Core.Models;
 using Microsoft.AspNetCore.Identity;
+using MongoDB.Driver;
 
 namespace DreamsMadeTrue.Accessors
 {
@@ -15,9 +17,14 @@ namespace DreamsMadeTrue.Accessors
 
         public async Task<ApplicationUser> AddToRoleAsync(ApplicationUser user, UserTypes role)
         {
-            user.Roles = user.Roles.Append(role).Distinct();
+            user.Roles = user.Roles?.Append(role).Distinct() ?? new List<UserTypes> { role };
             await Update(user);
             return user;
+        }
+
+        public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<ApplicationUser> manager, ApplicationUser user)
+        {
+            return Task.FromResult(true);
         }
 
         public async Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
@@ -48,6 +55,14 @@ namespace DreamsMadeTrue.Accessors
         public async Task<ApplicationUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
             return await First(u => u.NormalizedUserName == normalizedUserName);
+        }
+
+        public async Task<string> GenerateAsync(string purpose, UserManager<ApplicationUser> manager, ApplicationUser user)
+        {
+            var userToken = new UserToken { Name = purpose, Value = Guid.NewGuid().ToString() };
+            user.Tokens = user.Tokens?.Append(userToken) ?? new List<UserToken>() { userToken };
+            await Update(user);
+            return userToken.Value;
         }
 
         public Task<string> GetEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
@@ -137,6 +152,20 @@ namespace DreamsMadeTrue.Accessors
         {
             await Update(user);
             return IdentityResult.Success;
+        }
+
+        public async Task<bool> ValidateAsync(string purpose, string token, UserManager<ApplicationUser> manager, ApplicationUser user)
+        {
+            var tokens = user.Tokens?.ToList() ?? new List<UserToken>();
+            var matchingTokens = tokens.Where(t => t.Name == purpose && t.Value == token);
+            if (matchingTokens.Any())
+            {
+                user.Tokens = tokens.Where(t => !matchingTokens.Contains(t));
+                await Update(user);
+                return true;
+            }
+            return false;
+
         }
     }
 }

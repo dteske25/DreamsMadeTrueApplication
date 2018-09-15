@@ -27,7 +27,7 @@ namespace DreamsMadeTrue.Engines
 
         public async Task<UserDto> CreateUser(UserDto userInfo, string password)
         {
-            var result = await _userManager.CreateAsync(userInfo.AsApplicationUser(), password);
+            var result = await _userManager.CreateAsync(userInfo.ToBaseObj(), password);
             if (result.Succeeded)
             {
                 return await FindUserByEmail(userInfo.Email);
@@ -38,19 +38,19 @@ namespace DreamsMadeTrue.Engines
         public async Task<UserDto> FindUserByEmail(string email)
         {
             var user = await GetApplicationUserByEmail(email);
-            return user.AsUserDto();
+            return user.ToDto();
         }
 
         public async Task<UserDto> FindUserById(string id)
         {
             var user = await GetApplicationUserById(id);
-            return user.AsUserDto();
+            return user.ToDto();
         }
 
         public async Task<UserDto> FindUserByUsername(string username)
         {
             var user = await GetApplicationUserByUsername(username);
-            return user.AsUserDto();
+            return user.ToDto();
         }
 
         public async Task<string> GenerateEmailConfirmation(UserDto userInfo)
@@ -58,6 +58,23 @@ namespace DreamsMadeTrue.Engines
             var user = await GetApplicationUserById(userInfo.Id);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             return code;
+        }
+
+        public async Task<SignInResultDto> ConfirmEmail(string userId, string code)
+        {
+            var user = await GetApplicationUserById(userId);
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, false);
+                return new SignInResultDto
+                {
+                    Succeeded = true,
+                    Token = GenerateJWT(user),
+                    UserInfo = user.ToDto()
+                };
+            }
+            return new SignInResultDto { Succeeded = false };
         }
 
         public async Task<SignInResultDto> PasswordSignInUser(UserDto userInfo, string password)
@@ -69,8 +86,8 @@ namespace DreamsMadeTrue.Engines
                 return new SignInResultDto
                 {
                     Succeeded = true,
-                    Token = GenerateUserToken(user),
-                    UserInfo = user.AsUserDto()
+                    Token = GenerateJWT(user),
+                    UserInfo = user.ToDto()
                 };
             }
             return new SignInResultDto { Succeeded = false };
@@ -83,8 +100,8 @@ namespace DreamsMadeTrue.Engines
             return new SignInResultDto
             {
                 Succeeded = true,
-                Token = GenerateUserToken(user),
-                UserInfo = user.AsUserDto()
+                Token = GenerateJWT(user),
+                UserInfo = user.ToDto()
             };
         }
 
@@ -103,7 +120,7 @@ namespace DreamsMadeTrue.Engines
             return _userManager.FindByNameAsync(username);
         }
 
-        private string GenerateUserToken(ApplicationUser user)
+        private string GenerateJWT(ApplicationUser user)
         {
             var claims = new List<Claim>
                 {

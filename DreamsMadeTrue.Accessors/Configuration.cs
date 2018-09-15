@@ -22,7 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddUserStore<UserAccessor>()
                 .AddClaimsPrincipalFactory<ApplicationClaimsPrincipalFactory>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddTokenProvider<UserAccessor>("GuidTokenProvider");
 
             return services;
         }

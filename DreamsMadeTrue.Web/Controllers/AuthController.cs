@@ -33,25 +33,24 @@ namespace DreamsMadeTrue.Web.Controllers
             if (resultingUser != null)
             {
                 var code = await _userEngine.GenerateEmailConfirmation(resultingUser);
-                var url = $"{(HttpContext.Request.IsHttps ? "https://" : "http://")}{HttpContext.Request.Host}/register/confirm/{HtmlEncoder.Default.Encode(code)}";
-                var text = $"Confirm your account here: {url} ";
-                var html = $"<html><body><div>Click <a href=\"{url}\">here</a> to confirm your account</div></body></html>";
+                var link = $"{Request.Scheme}://{Request.Host}/api/auth/confirmEmail?userId={resultingUser.Id}&code={HtmlEncoder.Default.Encode(code)}";
+                var text = $"Confirm your account here: {link} ";
                 await _emailEngine.SendEmail(new EmailDto
                 {
                     ToAddresses = new List<string> { userParams.Email },
                     Subject = "Verify Your Account",
-                    TextContent = text,
-                    HtmlContent = html
+                    TextContent = text
                 });
-                //await _signInManager.SignInAsync(user, false);
-                //return Json(new
-                //{
-                //    token = GenerateToken(user),
-                //    userInfo = user
-                //});
                 return Ok();
             }
             return Unauthorized();
+        }
+
+        [HttpGet("confirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            var signInResult = await _userEngine.ConfirmEmail(userId, code);
+            return Json(signInResult);
         }
 
         [HttpPost("login")]
@@ -61,11 +60,7 @@ namespace DreamsMadeTrue.Web.Controllers
             var signInResult = await _userEngine.PasswordSignInUser(user, userParams.Password);
             if (signInResult.Succeeded)
             {
-                return Json(new
-                {
-                    token = signInResult.Token,
-                    userInfo = signInResult.UserInfo
-                });
+                return Json(signInResult);
             }
             return Unauthorized();
         }

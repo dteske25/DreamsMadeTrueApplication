@@ -8,6 +8,7 @@ namespace DreamsMadeTrue.Core.Interfaces
     public interface IUserAccessor : IUserStore<ApplicationUser>,
         IUserEmailStore<ApplicationUser>,
         IUserPasswordStore<ApplicationUser>,
+        IUserTwoFactorTokenProvider<ApplicationUser>,
         IMongoAccessor<ApplicationUser>
     {
         Task<ApplicationUser> AddToRoleAsync(ApplicationUser user, UserTypes role);
